@@ -142,15 +142,8 @@ class Board : IEnumerable<Square>
         return false;
     }
 
-    private int GetStaticScore()
-    {
-        int score = 0;
-        foreach (Square square in this)
-        {
-            if (!square.Marked)
-                score += square.Number;
-        }
-
-        return score;
-    }
+    private int GetStaticScore() =>
+        this
+            .Where(square => !square.Marked)
+            .Sum(square => square.Number);
 }
