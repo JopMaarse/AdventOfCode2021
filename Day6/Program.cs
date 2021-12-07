@@ -1,13 +1,13 @@
 ﻿using InputLogic;
 
-string input = (await InputHelper.GetInputAsync(day: 6)).First();
+IEnumerable<string> input = await InputHelper.GetInputAsync(day: 6, separator: ",");
 
 const int simulationLength = 256;
 const int newFishTimer = 8;
 const int resetTimer = 6; 
 long[] fish = new long[9];
 
-foreach (int timer in input.Split(',').Select(int.Parse))
+foreach (int timer in input.Select(int.Parse))
 {
     fish[timer]++;
 }
