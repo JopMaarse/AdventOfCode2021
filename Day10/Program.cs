@@ -16,17 +16,17 @@ int part1 = input
     .Select(GetErrorScore)
     .Sum();
 
-Console.WriteLine($"The awnser to part 1 is: {part1}");
+Console.WriteLine($"The answer to part 1 is: {part1}");
 
-long[] scores = input
+ulong[] scores = input
     .Where(line => GetErrorScore(line) == 0)
     .Select(GetCompleteScore)
     .OrderBy(s => s)
     .ToArray();
 
-long part2 = scores[scores.Length / 2];
+ulong part2 = scores[scores.Length / 2];
 
-Console.WriteLine($"The awnser to part 2 is: {part2}");
+Console.WriteLine($"The answer to part 2 is: {part2}");
 
 static int GetErrorScore(string line)
 {
@@ -48,7 +48,7 @@ static int GetErrorScore(string line)
     return 0;
 }
 
-static long GetCompleteScore(string line)
+static ulong GetCompleteScore(string line)
 {
     Stack<char> scope = new();
 
@@ -60,7 +60,7 @@ static long GetCompleteScore(string line)
             scope.Pop();
     }
 
-    return scope.Aggregate(0L, (score, next) => score * completeMultiplier + next switch
+    return scope.Aggregate(0UL, (score, next) => score * completeMultiplier + next switch
     {
         '(' => parenthesesComplete,
         '[' => bracketComplete,
