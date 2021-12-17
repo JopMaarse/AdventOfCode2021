@@ -10,68 +10,75 @@ int[] matches = targetAreaPattern
         .Select(group =>int.Parse(group.Value)))
     .ToArray();
 
-Vector min = new(matches[0], matches[2]);
-Vector max = new(matches[1], matches[3]);
-const int simulationLenth = 1000;
-Dictionary<long, (int Min, int Max)> velocitySteps = new();
-for (int verticalLaunchVelocity = -simulationLenth; verticalLaunchVelocity < simulationLenth; verticalLaunchVelocity++)
-{
-    int minSteps = 0, maxSteps = 0;
-    long height = Sum(verticalLaunchVelocity);
-    for (int velocity = verticalLaunchVelocity < 0 ? verticalLaunchVelocity : 0; height >= min.Y; velocity--)
-    {
-        if (height > max.Y)
-            minSteps++;
-        maxSteps++;
-        height += velocity;
-    }
-    if (minSteps != maxSteps)
-        velocitySteps[verticalLaunchVelocity] = (minSteps + Math.Max(0, verticalLaunchVelocity), maxSteps + Math.Max(0, verticalLaunchVelocity));
-}
-
-long maxHeight = 0, possibleLaunches = 0;
-for (long launch = velocitySteps.Keys.Min(); launch <= velocitySteps.Keys.Max(); launch++)
-{
-    if (!velocitySteps.ContainsKey(launch))
-        continue;
-
-    if (HitsTarget(launch, out long reachedHeight, out int launches))
-    {
-        maxHeight = reachedHeight;
-        possibleLaunches += launches;
-    }
-}
-
+int minX = matches[0], maxX = matches[1], minY = matches[2], maxY = matches[3];
+Dictionary<int, (int Min, int Max)> stepsPerLaunch = CalculateStepsPerVerticalLaunch();
+(int maxHeight, int launchesOnTarget) = CalulateLaunchesOnTarget();
 Console.WriteLine($"Part 1: {maxHeight}");
-Console.WriteLine($"Part 2: {possibleLaunches}");
+Console.WriteLine($"Part 2: {launchesOnTarget}");
 
-bool HitsTarget(long verticalLaunchVelocity, out long maxHeight, out int possibleLaunches)
+Dictionary<int, (int, int)> CalculateStepsPerVerticalLaunch()
 {
-    HashSet<int> possibleX = new();
-    maxHeight = default;    
-    for (int x = 0; x <= max.X; x++)
+    Dictionary<int, (int, int)> stepsPerLaunch = new();
+    for (int verticalLaunchVelocity = minY; verticalLaunchVelocity < -minY; verticalLaunchVelocity++)
     {
-        for (int step = velocitySteps[verticalLaunchVelocity].Min; step < velocitySteps[verticalLaunchVelocity].Max; step++)
+        int minSteps = 0, maxSteps = 0;
+        int height = Sum(verticalLaunchVelocity);
+        for (int velocity = verticalLaunchVelocity < 0 ? verticalLaunchVelocity : 0; height >= minY; velocity--)
         {
-            long horizontalPosition = Sum(x) - Sum(x - step);
+            if (height > maxY)
+                minSteps++;
 
-            if (horizontalPosition <= max.X && horizontalPosition >= min.X)
-            {
-                maxHeight = Sum(verticalLaunchVelocity);
-                possibleX.Add(x);
+            maxSteps++;
+            height += velocity;
+        }
+
+        if (minSteps != maxSteps)
+            stepsPerLaunch[verticalLaunchVelocity] = (minSteps + Math.Max(0, verticalLaunchVelocity), maxSteps + Math.Max(0, verticalLaunchVelocity));
+    }
+
+    return stepsPerLaunch;
+}
+
+(int, int) CalulateLaunchesOnTarget()
+{
+    int maxHeight = 0, launchesOnTarget = 0;
+    for (int verticalLaunchVelocity = stepsPerLaunch.Keys.Min(); verticalLaunchVelocity <= stepsPerLaunch.Keys.Max(); verticalLaunchVelocity++)
+    {
+        if (!stepsPerLaunch.ContainsKey(verticalLaunchVelocity))
+            continue;
+
+        if (HitsTarget(verticalLaunchVelocity, out int launches))
+        {
+            maxHeight = Sum(verticalLaunchVelocity);
+            launchesOnTarget += launches;
+        }
+    }
+
+    return (maxHeight, launchesOnTarget);
+}
+
+bool HitsTarget(int verticalLaunchVelocity, out int numberOfLaunches)
+{
+    HashSet<int> launches = new();
+    for (int horizontalLauchVelocity = 0; horizontalLauchVelocity <= maxX; horizontalLauchVelocity++)
+    {
+        for (int step = stepsPerLaunch[verticalLaunchVelocity].Min; step < stepsPerLaunch[verticalLaunchVelocity].Max; step++)
+        {
+            int horizontalPosition = Sum(horizontalLauchVelocity) - Sum(horizontalLauchVelocity - step);
+            if (horizontalPosition <= maxX && horizontalPosition >= minX)
+            {                
+                launches.Add(horizontalLauchVelocity);
             }
         }        
     }
 
-    possibleLaunches = possibleX.Count;
+    numberOfLaunches = launches.Count;
 
-    return possibleLaunches > 0;
+    return numberOfLaunches > 0;
 }
 
-static long Sum(long n) => n switch
+static int Sum(int n) => n switch
 {
     > 0 => (n + 1) * n / 2,
     _ => 0
 };
-
-record struct Vector(int X, int Y);
