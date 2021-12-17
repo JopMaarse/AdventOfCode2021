@@ -1,4 +1,5 @@
-﻿using Day16.Model;
+﻿using Day16.Logic.Abstraction;
+using Day16.Model;
 using Day16.Model.Enums;
 
 namespace Day16.Logic;
@@ -14,21 +15,16 @@ internal class Parser
     private Expression ParseExpression(string input, Expression? parent, ref int position)
     {
         int currentPosition = position;
-        int version = Convert.ToInt32(Read(3), fromBase: 2);
+        short version = Convert.ToInt16(Read(3), fromBase: 2);
         TypeId typeId = (TypeId)Convert.ToInt32(Read(3), fromBase: 2);
-
+        Expression result;
         if (typeId == TypeId.Literal)
-        {
-            Expression result = ParseLiteral();
-            position = currentPosition;
-            return result;
-        }
+            result = ParseLiteral();
         else
-        {
-            Expression result = ParseOperator();
-            position = currentPosition;
-            return result;
-        }
+            result = ParseOperator();
+
+        position = currentPosition;
+        return result;
 
         Expression ParseLiteral()
         {
@@ -41,36 +37,41 @@ internal class Parser
             }
             while (group[0] == '1');
 
-            Literal packet = new(version, Convert.ToUInt64(value, fromBase: 2));
-            return new Expression(packet, parent);
+            return new Expression(version, new Literal(Convert.ToUInt64(value, fromBase: 2)));
         }
 
         Expression ParseOperator()
         {
-            LengthTypeId lengthTypeId = Enum.Parse<LengthTypeId>(Read(1));
-            Operator packet = new(version, typeId);
-            Expression node = new(packet, parent);
+            IEvaluator evaluator = typeId switch
+            {
+                TypeId.Sum => new Sum(),
+                TypeId.Product => new Product(),
+                TypeId.Minimum => new Minimum(),
+                TypeId.Maximum => new Maximum(),
+                TypeId.GreaterThan => new GreaterThan(),
+                TypeId.LessThan => new LessThan(),
+                TypeId.EqualTo => new EqualTo(),
+                _ => throw new Exception("Unkown TypeId")
+            };
+
+            Expression expression = new(version, evaluator);
             int length;
-            if (lengthTypeId == LengthTypeId.TotalLength)
+            if (Read(1) == "0")
             {
                 length = Convert.ToInt32(Read(15), fromBase: 2);
                 string children = Read(length);
                 int childPosition = 0;
                 while (childPosition < length)
-                {
-                    node.Children.Add(ParseExpression(children, node, ref childPosition));
-                }
+                    expression.Children.Add(ParseExpression(children, expression, ref childPosition));
 
-                return node;
+                return expression;
             }
-            
+
             length = Convert.ToInt32(Read(11), fromBase: 2);
             for (int i = 0; i < length; i++)
-            {
-                node.Children.Add(ParseExpression(input, node, ref currentPosition));
-            }
+                expression.Children.Add(ParseExpression(input, expression, ref currentPosition));
 
-            return node;
+            return expression;
         }
 
         string Read(int length)

@@ -1,6 +1,8 @@
-﻿namespace Day16.Logic.Abstraction;
+﻿using Day16.Model;
+
+namespace Day16.Logic.Abstraction;
 
 internal interface IEvaluator
 {
-    ulong Evaluate(List<ulong> values);
+    ulong Evaluate(ICollection<Expression> children);
 }

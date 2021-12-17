@@ -1,4 +1,5 @@
 ﻿using Day16.Logic;
+using Day16.Model;
 using InputLogic;
 
 string hexadecimal = (await InputHelper.GetInputAsync(day: 16)).First();
@@ -22,5 +23,5 @@ string binary = hexadecimal
     .Replace("F", "1111");
 
 Expression expressionTree = new Parser().Parse(binary);
-Console.WriteLine("Part 1: " + expressionTree.Sum(e => e.Packet.Version));
-Console.WriteLine("Part 2: " + expressionTree.EvaluateTree());
+Console.WriteLine("Part 1: " + expressionTree.Sum(expression => expression.Version));
+Console.WriteLine("Part 2: " + expressionTree.Evaluate());
