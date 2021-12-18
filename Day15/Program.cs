@@ -1,46 +1,18 @@
-﻿using InputLogic;
+﻿using Day15;
+using InputLogic;
 
 string[] input = (await InputHelper.GetInputAsync(day: 15)).ToArray();
-
 const int height = 100, width = 100;
-Dictionary<Location, int> locationRisks = new();
-HashSet<Location> border = new();
-locationRisks[new(0,0)] = 0;
-border.Add(new(1, 0));
-border.Add(new(0, 1));
+Dijkstra<Location> dijkstra = new(source: new(0, 0), Neighbours, (_, location) => Risk(location), size: 500 * 500);
+Console.WriteLine("Part 1: " + dijkstra.GetDistance(new((int)99, (int)99)));
+Console.WriteLine("Part 2: " + dijkstra.GetDistance(new((int)499, (int)499)));
 
-while (border.Any())
+uint Risk(Location location)
 {
-    (int Risk, Location Location) minNeighbour = border
-        .Select(location => (Risk: MinNeighbour(location) + Risk(location), Location: location))
-        .MinBy(location => location.Risk);
-
-    locationRisks[minNeighbour.Location] = minNeighbour.Risk;
-    border.Remove(minNeighbour.Location);
-    foreach (Location n in Neighbours(minNeighbour.Location).Where(n => !locationRisks.ContainsKey(n)))
-    {
-        border.Add(n);
-    }
-}
-
-Console.WriteLine("Part 1: " + locationRisks[new(width - 1, height - 1)]);
-Console.WriteLine("Part 2: " + locationRisks[new(5 * width - 1, 5 * height - 1)]);
-
-int MinNeighbour(Location location) => 
-    Neighbours(location)
-        .Where(n => locationRisks.ContainsKey(n))
-        .Select(n => locationRisks[n])
-        .Min();
-
-int Risk(Location location)
-{
+    int risk = input[location.Y % height][location.X % width] - '0';
     int xMod = location.X / width;
     int yMod = location.Y / height;
-
-    int risk = input[location.Y % height][location.X % width] - '0';
-    risk = Reduce(risk + xMod + yMod);
-
-    return risk;
+    return (uint)Reduce(risk + xMod + yMod);
 }
 
 static int Reduce(int n) => n switch
@@ -49,7 +21,7 @@ static int Reduce(int n) => n switch
     _ => Reduce((n % 10) + 1)
 };
 
-IEnumerable<Location> Neighbours(Location location)
+static IEnumerable<Location> Neighbours(Location location)
 {
     if (location.X + 1 < width * 5)
         yield return new(location.X + 1, location.Y);
