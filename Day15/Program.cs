@@ -4,8 +4,8 @@ using InputLogic;
 string[] input = (await InputHelper.GetInputAsync(day: 15)).ToArray();
 const int height = 100, width = 100;
 Dijkstra<Location> dijkstra = new(source: new(0, 0), Neighbours, (_, location) => Risk(location), size: 500 * 500);
-Console.WriteLine("Part 1: " + dijkstra.GetDistance(new((int)99, (int)99)));
-Console.WriteLine("Part 2: " + dijkstra.GetDistance(new((int)499, (int)499)));
+Console.WriteLine("Part 1: " + dijkstra.GetDistance(new(99, 99)));
+Console.WriteLine("Part 2: " + dijkstra.GetDistance(new(499, 499)));
 
 uint Risk(Location location)
 {

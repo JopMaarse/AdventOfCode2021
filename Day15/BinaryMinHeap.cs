@@ -1,6 +1,16 @@
-﻿namespace Day15;
+﻿using System.Collections;
 
-public class BinaryMinHeap<TKey, TValue> where TKey : IEquatable<TKey> where TValue : struct
+namespace Day15;
+
+/// <summary>
+/// A binary min heap.
+/// When iterating over the heap, the first item is the smallest element.
+/// There is no guarantee for the order of any items after the first.
+/// Items in the heap can be retrieved or their value modified using the indexer in O(1) time.
+/// </summary>
+/// <typeparam name="TKey">This should implement <cref>IEquatable<TKey></cref>.</typeparam>
+/// <typeparam name="TValue">This should be a value type.</typeparam>
+public class BinaryMinHeap<TKey, TValue> : IEnumerable<KeyValuePair<TKey, TValue>> where TKey : IEquatable<TKey> where TValue : struct
 {
     private readonly KeyValuePair<TKey, TValue>[] _elements;
     private readonly IComparer<KeyValuePair<TKey, TValue>> _comparer;
@@ -8,9 +18,9 @@ public class BinaryMinHeap<TKey, TValue> where TKey : IEquatable<TKey> where TVa
 
     public int Count => _indices.Count;
 
-    public BinaryMinHeap(int size, IComparer<KeyValuePair<TKey, TValue>> comparer)
+    public BinaryMinHeap(int maxSize, IComparer<KeyValuePair<TKey, TValue>> comparer)
     {
-        _elements = new KeyValuePair<TKey, TValue>[size];
+        _elements = new KeyValuePair<TKey, TValue>[maxSize];
         _comparer = comparer;
         _indices = new();
     }
@@ -33,7 +43,7 @@ public class BinaryMinHeap<TKey, TValue> where TKey : IEquatable<TKey> where TVa
 
     public KeyValuePair<TKey, TValue> ExtractMin()
     {
-        if (Count < 0)
+        if (Count < 1)
             throw new Exception("Cannot extract from empty heap.");
         KeyValuePair<TKey, TValue> value = _elements[0];
         _indices.Remove(value.Key);
@@ -86,5 +96,10 @@ public class BinaryMinHeap<TKey, TValue> where TKey : IEquatable<TKey> where TVa
             MinHeapify(smallest);
         }
     }
+
+    public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() => 
+        _elements.Take(Count).GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }
 
