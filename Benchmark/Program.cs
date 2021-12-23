@@ -2,7 +2,7 @@
 using System.Reflection;
 
 List<Assembly> assemblies = new();
-for (int day = 2; day <= 21; day++)
+for (int day = 2; day <= 22; day++)
     assemblies.Add(Assembly.LoadFile($@"D:\Repos\AdventOfCode2021\Day{day}\bin\Release\net6.0\Day{day}.dll"));
 
 foreach (Assembly assembly in assemblies)
